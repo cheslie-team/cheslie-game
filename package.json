@@ -1,0 +1,22 @@
+{
+  "name": "cheslie-game",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cheslie-team/cheslie-game.git"
+  },
+  "author": "Simen Haugerud Granlund, Teodor Ande Elstad",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/cheslie-team/cheslie-game/issues"
+  },
+  "homepage": "https://github.com/cheslie-team/cheslie-game#readme",
+  "dependencies": {
+    "socket.io": "^1.7.3"
+  }
+}
