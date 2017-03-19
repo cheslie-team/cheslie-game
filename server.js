@@ -1,6 +1,18 @@
 var io = require('socket.io')(3000);
+var board = require('socket.io-client')('http://localhost:8080');
 var Chess = require('chess.js').Chess;
 var games = {};
+
+var displayBoard = function (chess) {
+  console.log(chess.ascii());
+  if (board) {
+    board.emit('move', chess.fen());
+  }
+};
+
+board.on('connect', function () {
+  console.log('Connected to board');
+});
 
 io.on('connect', function (player) {
 
@@ -11,7 +23,7 @@ io.on('connect', function (player) {
     } else {
       var chess = new Chess();
       console.log(gameId + ' started!');
-      console.log(chess.ascii());
+      displayBoard(chess);
       player.emit('move', {
         board: chess.fen(),
         white: games[gameId],
@@ -26,7 +38,7 @@ io.on('connect', function (player) {
     chess.load(game.board);
     console.log('Move from ' + (chess.turn() ? 'white' : 'black') + ' player: ' + game.move);
     chess.move(game.move);
-    console.log(chess.ascii());
+    displayBoard(chess);
 
     if (chess.game_over()) {
       print_result(chess);
