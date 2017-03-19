@@ -1,6 +1,9 @@
 var io = require('socket.io')(3000),
   Chess = require('chess.js').Chess,
+  feed = require('./modules/feed.js'),
   games = {}; //games[gameId] = players-one-socket-id
+
+feed.init(io);
 
 var print_result = function (chess) {
 
@@ -29,10 +32,6 @@ var print_result = function (chess) {
 
 io.on('connect', function (socket) {
 
-  socket.on('subscribe', function () {
-    socket.join('subscribers');
-  })
-
   socket.on('disconnect', function () {
     var gamesToRemove = []
     for (gameId in games) {
@@ -50,7 +49,7 @@ io.on('connect', function (socket) {
     } else {
       var chess = new Chess();
       console.log(gameId + ' started!');
-      socket.to('subscribers').emit('move', {
+      feed.broadcast('move', {
         gameId: gameId,
         board: chess.fen()
       });
@@ -67,9 +66,9 @@ io.on('connect', function (socket) {
   socket.on('move', function (game) {
     var chess = new Chess();
     chess.load(game.board);
-    console.log('Move from ' + (chess.turn() ? 'white' : 'black') + ' player: ' + game.move);
+    console.log('Move from ' + (chess.turn() === 'w' ? 'white' : 'black') + ' player: ' + game.move);
     chess.move(game.move);
-    socket.to('subscribers').emit('move', {
+    feed.broadcast('move', {
       gameId: game.id,
       board: chess.fen()
     });
