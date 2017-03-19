@@ -33,11 +33,6 @@ io.on('connect', function (player) {
     } else {
       game.board = chess.fen();
       var nextPlayer = (chess.turn() === 'b') ? game.white : game.black;
-      console.log(nextPlayer)
-      console.log(player.id)
-      console.log(game)
-      console.log(chess.turn())
-      
       player.broadcast.to(nextPlayer).emit('move', game);
     }
   });
