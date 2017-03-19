@@ -1,14 +1,6 @@
-var io = require('socket.io')(3000);
-var board = require('socket.io-client')('http://localhost:8080');
-var Chess = require('chess.js').Chess;
-var games = {};
-
-var displayBoard = function (chess) {
-  console.log(chess.ascii());
-  if (board) {
-    board.emit('move', chess.fen());
-  }
-};
+var io = require('socket.io')(3000),
+  Chess = require('chess.js').Chess,
+  games = {}; //games[gameId] = players-one-socket-id
 
 var print_result = function (chess) {
 
@@ -35,53 +27,58 @@ var print_result = function (chess) {
   }
 };
 
-board.on('connect', function () {
-  console.log('Connected to board');
-});
+io.on('connect', function (socket) {
 
-io.on('connect', function (player) {
+  socket.on('subscribe', function () {
+    socket.join('subscribers');
+  })
 
-  player.on('disconnect', function () {
+  socket.on('disconnect', function () {
     var gamesToRemove = []
     for (gameId in games) {
-      if (games[gameId] = player.id) {
+      if (games[gameId] = socket.id) {
         gamesToRemove.push(gameId);
       }
     }
     gamesToRemove.forEach(function (gameId) { delete games[gameId] })
-    console.log('Player is disconected');
   })
 
-  player.on('join', function (gameId) {
+  socket.on('join', function (gameId) {
     if (games[gameId] == undefined) {
       console.log('Player one joined game ' + gameId + '!');
-      games[gameId] = player.id;
+      games[gameId] = socket.id;
     } else {
       var chess = new Chess();
       console.log(gameId + ' started!');
-      displayBoard(chess);
-      player.emit('move', {
+      socket.to('subscribers').emit('move', {
+        gameId: gameId,
+        board: chess.fen()
+      });
+      socket.emit('move', {
+        id: gameId,
         board: chess.fen(),
         white: games[gameId],
-        black: player.id
+        black: socket.id
       });
       delete games[gameId];
     }
   })
 
-  player.on('move', function (game) {
+  socket.on('move', function (game) {
     var chess = new Chess();
     chess.load(game.board);
     console.log('Move from ' + (chess.turn() ? 'white' : 'black') + ' player: ' + game.move);
     chess.move(game.move);
-    displayBoard(chess);
-
+    socket.to('subscribers').emit('move', {
+      gameId: game.id,
+      board: chess.fen()
+    });
     if (chess.game_over()) {
       print_result(chess);
     } else {
       game.board = chess.fen();
       var nextPlayer = (chess.turn() === 'b') ? game.white : game.black;
-      player.broadcast.to(nextPlayer).emit('move', game);
+      socket.broadcast.to(nextPlayer).emit('move', game);
     }
   });
 });
