@@ -5,33 +5,7 @@ var io = require('socket.io')(3000),
 
 feed.init(io);
 
-var print_result = function (chess) {
-
-  if (chess.in_checkmate()) {
-    console.log('in_checkmate')
-  }
-
-  if (chess.insufficient_material()) {
-    console.log('insufficient_material')
-  }
-
-  if (chess.in_stalemate()) {
-    console.log('in_stalemate')
-  }
-
-  if (chess.in_threefold_repetition()) {
-    console.log('in_threefold_repetition')
-  }
-
-  if (chess.in_draw()) {
-    console.log('Its a draw');
-  } else {
-    console.log((chess.turn() ? 'White' : 'Black') + ' won the game');
-  }
-};
-
 io.on('connect', function (socket) {
-
   socket.on('disconnect', function () {
     var gamesToRemove = []
     for (gameId in games) {
@@ -44,15 +18,10 @@ io.on('connect', function (socket) {
 
   socket.on('join', function (gameId) {
     if (games[gameId] == undefined) {
-      console.log('Player one joined game ' + gameId + '!');
       games[gameId] = socket.id;
     } else {
       var chess = new Chess();
-      console.log(gameId + ' started!');
-      feed.broadcast('move', {
-        gameId: gameId,
-        board: chess.fen()
-      });
+      feed.gameStarted(gameId);
       socket.emit('move', {
         id: gameId,
         board: chess.fen(),
@@ -66,14 +35,14 @@ io.on('connect', function (socket) {
   socket.on('move', function (game) {
     var chess = new Chess();
     chess.load(game.board);
-    console.log('Move from ' + (chess.turn() === 'w' ? 'white' : 'black') + ' player: ' + game.move);
     chess.move(game.move);
-    feed.broadcast('move', {
+    feed.move({
       gameId: game.id,
       board: chess.fen()
     });
+    
     if (chess.game_over()) {
-      print_result(chess);
+      feed.gameEnded(game.id, chess)
     } else {
       game.board = chess.fen();
       var nextPlayer = (chess.turn() === 'b') ? game.white : game.black;
