@@ -1,4 +1,5 @@
-var io = require('socket.io')(3000),
+var port = process.env.PORT || 3000,
+  io = require('socket.io')(port, {origins: '*'}),
   Chess = require('chess.js').Chess,
   feed = require('./modules/feed.js'),
   games = {}; //games[gameId] = players-one-socket-id
