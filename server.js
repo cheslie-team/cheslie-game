@@ -1,5 +1,5 @@
 var config = require('./config/config'),
-  io = require('socket.io')(config.port, {origins: '*'}),
+  io = require('socket.io')(config.port, {origins: '*:*'}),
   Chess = require('chess.js').Chess,
   feed = require('./modules/feed.js');
 
