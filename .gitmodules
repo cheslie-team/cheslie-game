@@ -1,0 +1,3 @@
+[submodule "cheslie-config"]
+	path = cheslie-config
+	url = git@github.com:hgranlund/cheslie-config.git

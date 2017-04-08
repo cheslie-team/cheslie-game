@@ -1,17 +1,11 @@
-var config = require('./config/config');
+var config = require('./cheslie-config/config');
 var express = require('express');
 var app = express();
 var server = require('http').createServer(app);
-// var io = require('../..')(server);
-// New:
 var io = require('socket.io')(server);
-var port = process.env.PORT || 3000;
  
- 
- 
- 
-var  Chess = require('chess.js').Chess
- var feed = require('./modules/feed.js');
+var  Chess = require('chess.js').Chess;
+var feed = require('./modules/feed.js');
 
 feed.init(io);
 io.on('connect', function (socket) {
@@ -45,6 +39,6 @@ io.on('connect', function (socket) {
 });
 
 
-server.listen(port, function () {
-    console.log('Running our app on port: ' + port)
+server.listen(config.port, function () {
+    console.log('Running our app on port: ' + config.port)
 });
