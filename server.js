@@ -43,3 +43,8 @@ io.on('connect', function (socket) {
     }
   });
 });
+
+
+server.listen(port, function () {
+    console.log('Running our app on port: ' + port)
+});
