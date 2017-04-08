@@ -1,5 +1,5 @@
-var config = require('./config/config'),
- var express = require('express');
+var config = require('./config/config');
+var express = require('express');
 var app = express();
 var server = require('http').createServer(app);
 // var io = require('../..')(server);
