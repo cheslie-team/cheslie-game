@@ -2,9 +2,10 @@
   "name": "cheslie-game",
   "version": "1.0.0",
   "description": "",
-  "main": "server.js",
+  "main": "game.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node game.js"
   },
   "repository": {
     "type": "git",
@@ -19,7 +20,6 @@
   "dependencies": {
     "cheslie-config": "^1.0.*",
     "chess.js": "^0.10.2",
-    "express": "^4.15.2",
     "socket.io": "^1.7.3"
   }
 }

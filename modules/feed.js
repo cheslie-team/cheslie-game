@@ -44,6 +44,7 @@ exports.init = function (socketio) {
             socket.join('subscribers');
         })
     });
+    return exports;
 };
 
 exports.move = function (move) {
