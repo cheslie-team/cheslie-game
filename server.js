@@ -1,4 +1,4 @@
-var config = require('./cheslie-config/config');
+var config = require('cheslie-config');
 var express = require('express');
 var app = express();
 var server = require('http').createServer(app);
@@ -37,7 +37,6 @@ io.on('connect', function (socket) {
     }
   });
 });
-
 
 server.listen(config.port, function () {
     console.log('Running our app on port: ' + config.port)
