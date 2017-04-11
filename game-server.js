@@ -2,6 +2,7 @@ var config = require('cheslie-config'),
   server = require('http').createServer(),
   io = require('socket.io').listen(server),
   Chess = require('chess.js').Chess,
+  Game = require('./modules/game.js').Game,
   feed = require('./modules/feed.js').init(io);
 
 io.on('connect', function (socket) {
@@ -14,6 +15,7 @@ io.on('connect', function (socket) {
       socket.emit('move', {
         id: gameId,
         board: chess.fen(),
+        tardisKey: encrypt(socket.id)
       });
     }
   })
@@ -29,11 +31,12 @@ io.on('connect', function (socket) {
       feed.gameEnded(game.id, chess)
     } else {
       game.board = chess.fen();
+      game.tardisKey = encrypt(socket.id)
       socket.broadcast.to(game.id).emit('move', game);
     }
   });
 });
 
-server.listen(config.port, function () {
-  console.log('Running server on port: ' + config.port)
+server.listen(config.game.port, function () {
+  console.log('Running server on port: ' + config.game.port)
 });
