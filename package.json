@@ -4,8 +4,8 @@
   "description": "",
   "main": "game.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node game.js"
+    "test": "mocha test",
+    "start": "node game-server.js"
   },
   "repository": {
     "type": "git",
@@ -20,6 +20,8 @@
   "dependencies": {
     "cheslie-config": "^1.0.*",
     "chess.js": "^0.10.2",
+    "crypto": "0.0.3",
+    "mocha": "^3.2.0",
     "socket.io": "^1.7.3"
   }
 }
