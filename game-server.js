@@ -1,38 +1,28 @@
 var config = require('cheslie-config'),
   server = require('http').createServer(),
   io = require('socket.io').listen(server),
-  Chess = require('chess.js').Chess,
   Game = require('./modules/game.js').Game,
   feed = require('./modules/feed.js').init(io);
 
 io.on('connect', function (socket) {
   socket.on('join', function (gameId) {
     socket.join(gameId);
-    var allPlayers = io.sockets.adapter.rooms[gameId];
+    var allPlayers = Object.keys(io.sockets.adapter.rooms[gameId].sockets);
     if (allPlayers.length === 2) {
-      var chess = new Chess();
+      var game = new Game(gameId, allPlayers[0], allPlayers[1]);
       feed.gameStarted(gameId);
-      socket.emit('move', {
-        id: gameId,
-        board: chess.fen(),
-        tardisKey: encrypt(socket.id)
-      });
+      socket.emit('move', game.asPublicGame());
     }
   })
 
-  socket.on('move', function (game) {
-    var chess = new Chess(game.board);
-    chess.move(game.move);
-    feed.move({
-      gameId: game.id,
-      board: chess.fen()
-    });
-    if (chess.game_over()) {
-      feed.gameEnded(game.id, chess)
+  socket.on('move', function (publicGame) {
+    var game = Game.fromPublic(publicGame);
+    game.move(publicGame.move);
+    feed.move(game);
+    if (game.game_over()) {
+      feed.gameEnded(game);
     } else {
-      game.board = chess.fen();
-      game.tardisKey = encrypt(socket.id)
-      socket.broadcast.to(game.id).emit('move', game);
+      socket.broadcast.to(game.id).emit('move', game.asPublicGame());
     }
   });
 });

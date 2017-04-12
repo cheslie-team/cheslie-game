@@ -47,8 +47,11 @@ exports.init = function (socketio) {
     return exports;
 };
 
-exports.move = function (move) {
-    broadcast('move', move);
+exports.move = function (game) {
+    broadcast('move', {
+        gameId: game.id,
+        board: game.board()
+    });
 }
 
 exports.gameStarted = function (gameId) {
@@ -56,10 +59,11 @@ exports.gameStarted = function (gameId) {
     broadcast('started', gameId);
 }
 
-exports.gameEnded = function (gameid, chess) {
-    console.log(gameid + ' ended in ' + reason(chess) + ' with result ' + result(chess));
+exports.gameEnded = function (game) {
+    var chess = game.chess;
+    console.log(game.id + ' ended in ' + reason(chess) + ' with result ' + result(chess));
     broadcast('ended', {
-        id: gameid,
+        id: game.id,
         result: result(chess),
         reason: reason(chess)
     });

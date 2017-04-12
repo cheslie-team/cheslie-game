@@ -2,7 +2,7 @@
 var crypto = require('crypto'),
     Chess = require('chess.js').Chess,
     algorithm = 'aes-256-ctr',
-    password = 'd6F3Efeq',
+    password = process.env.SPADE_SHAPED_SILVER_KEY || 'spade_shaped_silver_key',
 
     encryptText = function (text) {
         var cipher = crypto.createCipher(algorithm, password)
@@ -16,11 +16,7 @@ var crypto = require('crypto'),
         var dec = decipher.update(text, 'hex', 'utf8')
         dec += decipher.final('utf8');
         return dec;
-    },
-    decrypt = function (encryptedGame) {
-        return JSON.parse(decryptText(encryptedGame.tardisKey))
     };
-
 
 var Game = class Game {
     constructor(gameId, whitePlayer, blackPlayer) {
@@ -34,22 +30,40 @@ var Game = class Game {
         return this.chess.fen();
     }
 
-    encrypt() {
-        var json = {
-            id: this.id,
-            board: this.board(),
-            tardisKey: encryptText(JSON.stringify({ id: this.id, black: this.black, white: this.white, board: this.chess.fen() }))
-        };
-        return json;
+    move(move) {
+        this.chess.move(move);
     }
 
+    game_over(){
+        return this.chess.game_over()
+    }
+
+    encrypt() {
+        var privateState = {
+            white: this.white,
+            black: this.black,
+            board: this.board()
+        };
+        return encryptText(JSON.stringify(privateState))
+    }
+
+    asPublicGame() {
+        return {
+            id: this.id,
+            board: this.board(),
+            tardisKey: this.encrypt()
+        }
+    }
 }
 
-Game.decrypt = function (encryptedGame) {
-    var decryptetJson = JSON.parse(decryptText(encryptedGame.tardisKey));
-    var game = new Game(decryptetJson.id, decryptetJson.white, decryptetJson.black)
-    game.chess = new Chess(decryptetJson.board);
-    return game
+Game.fromPublic = function (publicGame) {
+    var privateState = JSON.parse(decryptText(publicGame.tardisKey));
+    var game = new Game();
+    game.black = privateState.black;
+    game.white = privateState.white;
+    game.chess = new Chess(privateState.board);
+    game.id = publicGame.id;
+    return game;
 }
 
 module.exports.Game = Game;

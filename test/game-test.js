@@ -4,7 +4,7 @@ var should = require('chai').should(),
   Game = require('./../modules/game.js').Game;
 var theGame;
 
-describe('When a game is created, ', function () {
+describe('When a game is created,', function () {
   var game;
   beforeEach(() => game = new Game('1337', 'Doctor who', 'Clara Oswald'));
 
@@ -12,13 +12,13 @@ describe('When a game is created, ', function () {
     game.board().should.equal(new Chess().fen());
   })
 
-  describe('and the game is encrypted,', function () {
+  describe('and the game is transformed to PublicGame,', function () {
     var game,
       encryptetGame;
 
     beforeEach(() => {
       game = new Game('1337', 'Doctor who', 'Clara Oswald');
-      encryptedGame = game.encrypt();
+      encryptedGame = game.asPublicGame();
     });
 
     it('should not be equal to original game', function () {
@@ -33,14 +33,13 @@ describe('When a game is created, ', function () {
       encryptedGame.id.should.equal(game.id);
     });
 
-
-    describe('and decrypted again', () => {
+    describe('and back to Game again', () => {
       var originalGame,
         game;
 
       beforeEach(() => {
         originalGame = new Game('1337', 'Doctor who', 'Clara Oswald');
-        game = Game.decrypt(originalGame.encrypt());
+        game = Game.fromPublic(originalGame.asPublicGame());
       });
       
       it('should equal original game', () => {

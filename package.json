@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/cheslie-team/cheslie-game#readme",
   "dependencies": {
+    "chai": "^3.5.0",
     "cheslie-config": "^1.0.*",
     "chess.js": "^0.10.2",
     "crypto": "0.0.3",
