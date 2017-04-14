@@ -9,7 +9,7 @@ io.on('connect', function (socket) {
     socket.join(gameId);
     var allPlayers = Object.keys(io.sockets.adapter.rooms[gameId].sockets);
     if (allPlayers.length === 2) {
-      var game = new Game(gameId, allPlayers[0], allPlayers[1]);
+      var game = new Game(gameId, allPlayers[1], allPlayers[0]);
       feed.gameStarted(gameId);
       socket.emit('move', game.asPublicGame());
     }
