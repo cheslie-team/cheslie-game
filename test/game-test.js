@@ -6,47 +6,55 @@ var theGame;
 
 describe('When a game is created,', function () {
   var game;
-  beforeEach(() => game = new Game('1337', 'Doctor who', 'Clara Oswald'));
+  beforeEach('The game is created', () => game = new Game('1337', 'Doctor who', 'Clara Oswald'));
 
   it('should create a new initial chessboard', function () {
     game.board().should.equal(new Chess().fen());
   })
 
-  describe('and the game is transformed to PublicGame,', function () {
-    var game,
-      encryptetGame;
+  it('should be white players turn', () => {
+    game.playerToMove().should.equal(game.white);
+  });
 
-    beforeEach(() => {
-      game = new Game('1337', 'Doctor who', 'Clara Oswald');
-      encryptedGame = game.asPublicGame();
+  describe('and after white has moved', () => {
+    beforeEach('White moves to e4', () => game.move('e4'));
+
+    it('should be blacks turn', () => {
+      game.playerToMove().should.equal(game.black);
+    });
+  });
+
+  describe('and the game is transformed to PublicGame,', function () {
+    var publicGame;
+
+    beforeEach('A public game is created to send to the player', () => {
+      publicGame = game.asPublicGame();
     });
 
     it('should not be equal to original game', function () {
-      game.should.not.equal(encryptedGame);
+      game.should.not.equal(publicGame);
     })
 
     it('should contain a readable fen version of the board', () => {
-      encryptedGame.board.should.equal(game.board());
+      publicGame.board.should.equal(game.board());
     });
 
     it('should contain the id', () => {
-      encryptedGame.id.should.equal(game.id);
+      publicGame.id.should.equal(game.id);
     });
 
     describe('and back to Game again', () => {
-      var originalGame,
-        game;
+      var returnedGame;
 
-      beforeEach(() => {
-        originalGame = new Game('1337', 'Doctor who', 'Clara Oswald');
-        game = Game.fromPublic(originalGame.asPublicGame());
+      beforeEach('Conerting public game back to internal game', () => {
+        returnedGame = Game.fromPublic(game.asPublicGame());
       });
-      
+
       it('should equal original game', () => {
-        game.id.should.equal(originalGame.id);
-        game.white.should.equal(originalGame.white);
-        game.black.should.equal(originalGame.black);
-        game.board().should.equal(originalGame.board());
+        returnedGame.id.should.equal(game.id);
+        returnedGame.white.should.equal(game.white);
+        returnedGame.black.should.equal(game.black);
+        returnedGame.board().should.equal(game.board());
       });
     });
   });

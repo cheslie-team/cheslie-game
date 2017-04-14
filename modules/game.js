@@ -51,13 +51,17 @@ var Game = class Game {
         return {
             id: this.id,
             board: this.board(),
-            tardisKey: this.encrypt()
+            tardis: this.encrypt()
         }
+    }
+
+    playerToMove(){
+        return (this.chess.turn() === 'w') ? this.white : this.black;
     }
 }
 
 Game.fromPublic = function (publicGame) {
-    var privateState = JSON.parse(decryptText(publicGame.tardisKey));
+    var privateState = JSON.parse(decryptText(publicGame.tardis));
     var game = new Game();
     game.black = privateState.black;
     game.white = privateState.white;
