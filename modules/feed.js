@@ -50,13 +50,19 @@ exports.init = function (socketio) {
 exports.move = function (game) {
     broadcast('move', {
         gameId: game.id,
+        white: game.white.name,
+        black: game.black.name,
         board: game.board()
     });
 }
 
-exports.gameStarted = function (gameId) {
-    console.log(gameId + ' started!');
-    broadcast('started', gameId);
+exports.gameStarted = function (game) {
+    console.log(game.id + ' started!');
+    broadcast('started', {
+        id: game.id,
+        white: game.white.name,
+        black: game.black.name
+    });
 }
 
 exports.gameEnded = function (game) {
