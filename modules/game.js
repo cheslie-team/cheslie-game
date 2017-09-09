@@ -70,6 +70,7 @@ var Game = class Game {
         var privateState = {
             white: this.white,
             black: this.black,
+            pgn: this.chess.pgn(),
             board: this.board()
         };
         return encryptText(JSON.stringify(privateState))
@@ -117,7 +118,6 @@ var Game = class Game {
         .map(p => { return PIECEVALUES[p.type]})
         .reduce((v1, v2) => { return v1 + v2 }, 0);
     }
-
 };
 
 Game.fromPublic = function (publicGame) {
@@ -125,7 +125,8 @@ Game.fromPublic = function (publicGame) {
     var game = new Game();
     game.black = Player.fromJson(privateState.black);
     game.white = Player.fromJson(privateState.white);
-    game.chess = new Chess(privateState.board);
+    game.chess = new Chess();
+    game.chess.load_pgn(privateState.pgn);
     game.id = publicGame.id;
     return game;
 }
