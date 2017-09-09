@@ -1,4 +1,20 @@
-'use strict'
+const PAWN = 'p',
+    KNIGHT = 'n',
+    BISHOP = 'b',
+    ROOK = 'r',
+    QUEEN = 'q',
+    KING = 'k',
+    BLACK = 'b',
+    WHITE = 'w',
+    PIECEVALUES = {
+        [PAWN]: 1,
+        [KNIGHT]: 3,
+        [BISHOP]: 3,
+        [ROOK]: 5,
+        [QUEEN]: 9,
+        [KING]: 0
+    };
+
 var crypto = require('crypto'),
     Chess = require('chess.js').Chess,
     algorithm = 'aes-256-ctr',
@@ -24,10 +40,10 @@ var Player = class Player {
         this.name = name;
         this.color = 'w';
     }
-}
+};
 Player.fromJson = function (json) {
     return new Player(json.id, json.name, json.color);
-}
+};
 
 var Game = class Game {
     constructor(gameId, whitePlayerId, blackPlayerId, playerNames) {
@@ -70,7 +86,39 @@ var Game = class Game {
     playerToMove() {
         return (this.chess.turn() === 'w') ? this.white : this.black;
     }
-}
+
+    pieces(color) {
+        var letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'],
+            squares = [],
+            chess = this.chess;
+
+        for (var i = 1; i <= 8; i++) {
+            letters.forEach(function (letter) {
+                squares.push(letter + i);
+            });
+        };
+
+        return squares.map(function (square) {
+            return chess.get(square);
+        }).filter(function (val) {
+            if (color && val) {
+                return val.color === color;
+            }
+            return val;
+        });
+    }
+    valueBlackPieces() {
+        return this.pieces(BLACK)
+            .map(p => { return PIECEVALUES[p.type]})
+            .reduce((v1, v2) => { return v1 + v2 }, 0);
+    }
+    valueWhitePieces() {
+        return this.pieces(WHITE)
+        .map(p => { return PIECEVALUES[p.type]})
+        .reduce((v1, v2) => { return v1 + v2 }, 0);
+    }
+
+};
 
 Game.fromPublic = function (publicGame) {
     var privateState = JSON.parse(decryptText(publicGame.tardis));

@@ -9,6 +9,7 @@ io.on('connect', function (socket) {
   socket.on('join', function (gameId, playerName) {
     playerNames[socket.id] = playerName;
     socket.join(gameId);
+
     var allPlayers = Object.keys(io.sockets.adapter.rooms[gameId].sockets);
     if (allPlayers.length === 2) {
       var game = new Game(gameId, allPlayers[1], allPlayers[0], playerNames);

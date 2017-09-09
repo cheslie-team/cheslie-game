@@ -15,6 +15,14 @@ describe('When a game is created,', function () {
     game.board().should.equal(new Chess().fen());
   })
 
+  it('should calculate value of blacks pieces to 39', ()=> {
+    game.valueBlackPieces().should.equal(39);
+  });
+  
+  it('should calculate value of white pieces to 39', ()=> {
+    game.valueWhitePieces().should.equal(39);
+  });
+
   it('should be white players turn', () => {
     game.playerToMove().id.should.equal(game.white.id);
   });
