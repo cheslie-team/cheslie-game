@@ -14,7 +14,7 @@ var isWhiteBlack = function (whiteName, blackName, gameId) {
 
 io.on('connect', function (socket) {
   socket.__proto__.onclose = function (reason) {
-    this.emit('disconnecting', reason); //<--insert the new event here
+    this.emit('disconnecting', reason);
     this.leaveAll();
     this.emit('disconnect', reason);
   };
@@ -70,7 +70,6 @@ io.on('connect', function (socket) {
           gameId: gameId,
         });
       endGame(gameId);
-
     })
   });
 
