@@ -19,13 +19,7 @@ io.on('connect', function (socket) {
     this.emit('disconnect', reason);
   };
 
-  var isGameEnded = (gameId) => {
-    return (io.sockets.adapter.rooms[gameId] === undefined);
-  }
-
   var endGame = (gameId) => {
-    if (isGameEnded(gameId)) return;
-
     var sockets = io.sockets.adapter.rooms[gameId].sockets;
     if (!sockets) return;
     Object.keys(sockets).forEach(function (id) {
@@ -57,18 +51,7 @@ io.on('connect', function (socket) {
     if (game.playerToMove().id !== socket.id) return;
     socket.isWhite = game.chess.turn() === 'w';
     game.move(publicGame.move);
-    if (isGameEnded(game.id)) return;
     feed.move(game);
-
-    setTimeout(() => {
-      feed.gameEndedByTimeOut(
-        {
-          result: (socket.isWhite) ? '0-1' : '1-0',
-          gameId: game.id,
-        });
-      endGame(game.id);
-    }, 5000)
-
     if (game.game_over()) {
       feed.gameEnded(game);
       endGame(game.id);
