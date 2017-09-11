@@ -82,7 +82,7 @@ exports.gameEnded = function (game) {
     });
 }
 exports.gameEndedByTimeOut = function (data) {
-    console.log(data.gameId + ' ended in ' + data.result + ' with result ' + data.gameId);
+    console.log(data.gameId + ' with result ' + data.result);
     broadcast('ended', {
         id: data.gameId,
         result: data.result,

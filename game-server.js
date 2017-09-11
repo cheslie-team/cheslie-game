@@ -13,6 +13,20 @@ var isWhiteBlack = function (whiteName, blackName, gameId) {
 }
 
 io.on('connect', function (socket) {
+  socket.__proto__.onclose = function (reason) {
+    this.emit('disconnecting', reason); //<--insert the new event here
+    this.leaveAll();
+    this.emit('disconnect', reason);
+  };
+
+  var endGame = (gameId) => {
+    var sockets = io.sockets.adapter.rooms[gameId].sockets;
+    if (!sockets) return;
+    Object.keys(sockets).forEach(function (id) {
+      io.sockets.connected[id].leave(gameId);
+    });
+  }
+
   socket.on('join', function (gameId, playerName) {
     playerNames[socket.id] = playerName;
     socket.join(gameId);
@@ -40,21 +54,27 @@ io.on('connect', function (socket) {
     feed.move(game);
     if (game.game_over()) {
       feed.gameEnded(game);
+      endGame(game.id);
     } else {
       socket.broadcast.to(game.id).emit('move', game.asPublicGame());
     }
   });
 
-  socket.on('disconnect', function () {
+  socket.on('disconnecting', function () {
     let rooms = Object.keys(socket.rooms).filter(room => { return room !== socket.id });
     var result = (socket.isWhite) ? '0-1' : '1-0'
     rooms.map(gameId => {
       feed.gameEndedByTimeOut(
         {
           result: result,
-          gameid: gameId,
+          gameId: gameId,
         });
+      endGame(gameId);
+
     })
+  });
+
+  socket.on('disconnect', function () {
     delete playerNames[socket.id];
   });
 });
