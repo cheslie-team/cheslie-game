@@ -6,8 +6,6 @@ var config = require('cheslie-config'),
   feed = require('./modules/feed.js').init(io),
   playerNames = {};
 
-io.origins(); 
-
 var isWhiteBlack = function (whiteName, blackName, gameId) {
   var key = whiteName + blackName;
   var hashedKey = hash.sha256().update(key).digest('hex');
