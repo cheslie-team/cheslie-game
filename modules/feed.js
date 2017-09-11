@@ -4,8 +4,8 @@ var io = null,
         io.to('subscribers').emit(event, data);
     },
 
-    reason = function (chess) {
-
+    reason = function (game) {
+        var chess = game.chess
         if (chess.in_checkmate()) {
             return 'Checkmate';
         }
@@ -21,7 +21,7 @@ var io = null,
         if (chess.in_threefold_repetition()) {
             return 'Threefold repetition';
         }
-        if (chess.in_draw()) {
+        if (chess.in_draw() || game.toManyMoves()) {
             // Over 100 moves each, se chess.js
             return 'To many moves';
         }
@@ -29,11 +29,13 @@ var io = null,
         return 'We dont know :(';
     },
 
-    result = function (chess) {
-        if (chess.in_draw()) {
+    result = function (game) {
+        if (game.toManyMoves())
+            return '1/2-1/2';
+        if (game.chess.in_draw()) {
             return '1/2-1/2';
         } else {
-            return chess.turn() === 'w' ? '0-1' : '1-0';
+            return game.chess.turn() === 'w' ? '0-1' : '1-0';
         }
     };
 
@@ -71,12 +73,11 @@ exports.gameStarted = function (game) {
 }
 
 exports.gameEnded = function (game) {
-    var chess = game.chess;
-    console.log(game.id + ' ended in ' + reason(chess) + ' with result ' + result(chess));
+    console.log(game.id + ' ended in ' + reason(game) + ' with result ' + result(game));
     broadcast('ended', {
         id: game.id,
-        result: result(chess),
-        reason: reason(chess),
+        result: result(game),
+        reason: reason(game),
         valueBlackPieces: game.valueBlackPieces(),
         valueWhitePieces: game.valueWhitePieces()
     });

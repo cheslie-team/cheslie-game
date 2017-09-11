@@ -53,6 +53,9 @@ var Game = class Game {
         this.black = new Player(blackPlayerId, playerNames[blackPlayerId], 'b');
         this.chess = new Chess();
     }
+    toManyMoves(){
+        return this.chess.history().length >= 100;
+    }
 
     board() {
         return this.chess.fen();
@@ -63,7 +66,7 @@ var Game = class Game {
     }
 
     game_over() {
-        return this.chess.game_over()
+        return this.chess.game_over() || this.toManyMoves()
     }
 
     encrypt() {
