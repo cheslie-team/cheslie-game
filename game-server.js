@@ -18,22 +18,25 @@ io.on('connect', function (socket) {
     socket.join(gameId);
     var allPlayers = Object.keys(io.sockets.adapter.rooms[gameId].sockets);
     if (allPlayers.length === 2) {
-      var game
+      var game,
+        whiteId;
       if (isWhiteBlack(playerNames[allPlayers[1]], playerNames[allPlayers[0]], gameId)) {
         game = new Game(gameId, allPlayers[1], allPlayers[0], playerNames);
+        whiteId = allPlayers[1]
       } else {
         game = new Game(gameId, allPlayers[0], allPlayers[1], playerNames);
-
+        whiteId = allPlayers[0]
       }
       feed.gameStarted(game);
-      socket.emit('move', game.asPublicGame());
+      io.to(whiteId).emit('move', game.asPublicGame());
     }
   })
 
   socket.on('move', function (publicGame) {
     var game = Game.fromPublic(publicGame);
-    if (game.playerToMove().id != socket.id) return;
+    if (game.playerToMove().id !== socket.id) return;
     game.move(publicGame.move);
+    socket.isWhite = game.chess.turn() === 'w';
     feed.move(game);
     if (game.game_over()) {
       feed.gameEnded(game);
@@ -43,6 +46,15 @@ io.on('connect', function (socket) {
   });
 
   socket.on('disconnect', function () {
+    let rooms = Object.keys(socket.rooms).filter(room => { return room !== socket.id });
+    var result = (socket.isWhite) ? '0-1' : '1-0'
+    rooms.map(gameId => {
+      feed.gameEndedByTimeOut(
+        {
+          result: result,
+          gameid: gameId,
+        });
+    })
     delete playerNames[socket.id];
   });
 });

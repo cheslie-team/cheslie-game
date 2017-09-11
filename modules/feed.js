@@ -26,7 +26,7 @@ var io = null,
             return 'To many moves';
         }
 
-        return '';
+        return 'We dont know :(';
     },
 
     result = function (chess) {
@@ -48,6 +48,7 @@ exports.init = function (socketio) {
 };
 
 exports.move = function (game) {
+    // console.log(game.white.name + ' - ' + game.black.name+ ' moved! in game ' + game.id);    
     broadcast('move', {
         gameId: game.id,
         white: game.white.name,
@@ -80,3 +81,14 @@ exports.gameEnded = function (game) {
         valueWhitePieces: game.valueWhitePieces()
     });
 }
+exports.gameEndedByTimeOut = function (data) {
+    console.log(data.gameId + ' ended in ' + data.result + ' with result ' + data.gameId);
+    broadcast('ended', {
+        id: data.gameId,
+        result: data.result,
+        reason: 'Time out',
+        valueBlackPieces: 0,
+        valueWhitePieces: 0
+    });
+}
+
