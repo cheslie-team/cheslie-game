@@ -57,7 +57,8 @@ exports.move = function (game) {
         black: game.black.name,
         valueBlackPieces: game.valueBlackPieces(),
         valueWhitePieces: game.valueWhitePieces(),
-        board: game.board()
+        board: game.board(),
+        turn: game.chess.turn()
     });
 }
 
@@ -68,7 +69,8 @@ exports.gameStarted = function (game) {
         valueBlackPieces: game.valueBlackPieces(),
         valueWhitePieces: game.valueWhitePieces(),
         white: game.white.name,
-        black: game.black.name
+        black: game.black.name,
+        turn: 'w'
     });
 }
 
