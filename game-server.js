@@ -48,7 +48,9 @@ io.on('connect', function (socket) {
 
   socket.on('move', function (publicGame) {
     var game = Game.fromPublic(publicGame);
-    if (game.playerToMove().id !== socket.id) return;
+    if (!game.isLegal || game.playerToMove().id !== socket.id) return;
+    if(!game.isLegalMove(publicGame.move)) return;
+
     socket.isWhite = game.chess.turn() === 'w';
     game.move(publicGame.move);
     feed.move(game);

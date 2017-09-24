@@ -20,18 +20,23 @@ var crypto = require('crypto'),
     algorithm = 'aes-256-ctr',
     password = process.env.SPADE_SHAPED_SILVER_KEY || 'spade_shaped_silver_key',
 
-    encryptText = function (text) {
+    encryptJson = function (json) {
+        var text = JSON.stringify(json);
         var cipher = crypto.createCipher(algorithm, password)
         var crypted = cipher.update(text, 'utf8', 'hex')
         crypted += cipher.final('hex');
         return crypted;
     },
 
-    decryptText = function (text) {
+    decryptJson = function (text) {
         var decipher = crypto.createDecipher(algorithm, password)
-        var dec = decipher.update(text, 'hex', 'utf8')
-        dec += decipher.final('utf8');
-        return dec;
+        try {
+            var dec = decipher.update(text, 'hex', 'utf8')
+            dec += decipher.final('utf8');
+            return JSON.parse(dec);
+        } catch (ex) {
+            return undefined;
+        }
     };
 
 var Player = class Player {
@@ -49,16 +54,21 @@ var Game = class Game {
     constructor(gameId, whitePlayerId, blackPlayerId, playerNames) {
         if (playerNames === undefined) return this;
         this.id = gameId;
-        this.white = new Player(whitePlayerId, playerNames[whitePlayerId], 'w')
+        this.isLegal = true;
+        this.white = new Player(whitePlayerId, playerNames[whitePlayerId], 'w');
         this.black = new Player(blackPlayerId, playerNames[blackPlayerId], 'b');
         this.chess = new Chess();
     }
-    toManyMoves(){
+    toManyMoves() {
         return this.chess.history().length >= 100;
     }
 
     board() {
         return this.chess.fen();
+    }
+
+    isLegalMove(move){
+        return this.chess.moves().some(legalMove => legalMove === move);
     }
 
     move(move) {
@@ -76,7 +86,7 @@ var Game = class Game {
             pgn: this.chess.pgn(),
             board: this.board()
         };
-        return encryptText(JSON.stringify(privateState))
+        return encryptJson(privateState)
     }
 
     asPublicGame() {
@@ -113,24 +123,26 @@ var Game = class Game {
     }
     valueBlackPieces() {
         return this.pieces(BLACK)
-            .map(p => { return PIECEVALUES[p.type]})
+            .map(p => { return PIECEVALUES[p.type] })
             .reduce((v1, v2) => { return v1 + v2 }, 0);
     }
     valueWhitePieces() {
         return this.pieces(WHITE)
-        .map(p => { return PIECEVALUES[p.type]})
-        .reduce((v1, v2) => { return v1 + v2 }, 0);
+            .map(p => { return PIECEVALUES[p.type] })
+            .reduce((v1, v2) => { return v1 + v2 }, 0);
     }
 };
 
 Game.fromPublic = function (publicGame) {
-    var privateState = JSON.parse(decryptText(publicGame.tardis));
     var game = new Game();
+    game.chess = new Chess();
+    game.id = publicGame.id;
+    var privateState = decryptJson(publicGame.tardis);
+    game.isLegal = (!privateState) ? false : true;
+    if (!game.isLegal) return game;
     game.black = Player.fromJson(privateState.black);
     game.white = Player.fromJson(privateState.white);
-    game.chess = new Chess();
     game.chess.load_pgn(privateState.pgn);
-    game.id = publicGame.id;
     return game;
 }
 
