@@ -84,12 +84,12 @@ exports.gameEnded = function (game) {
         valueWhitePieces: game.valueWhitePieces()
     });
 }
-exports.gameEndedByTimeOut = function (data) {
-    console.log(data.gameId + ' with result ' + data.result);
+exports.gameEndedWithReason = function (gameId, result, reason) {
+    console.log(gameId + ' with result ' + result);
     broadcast('ended', {
-        id: data.gameId,
-        result: data.result,
-        reason: 'Time out',
+        id: gameId,
+        result: result,
+        reason: reason,
         valueBlackPieces: 0,
         valueWhitePieces: 0
     });
