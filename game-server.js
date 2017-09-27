@@ -1,4 +1,4 @@
-const TIMEOUT = 10000;
+const TIMEOUT = 20000;
 var config = require('cheslie-config'),
   server = require('http').createServer(),
   hash = require('hash.js'),
@@ -68,7 +68,7 @@ io.on('connect', function (socket) {
       }
       gameRoom.whiteId = game.white.id;
       gameRoom.blackId = game.black.id;
-      io.sockets.connected[game.black.id].lastMove = Date.now() + 1111;
+      io.sockets.connected[game.black.id].lastMove = Date.now() + TIMEOUT;
       io.sockets.connected[game.white.id].lastMove = Date.now();
       io.to(game.white.id).emit('move', game.asPublicGame());
       feed.gameStarted(game);
