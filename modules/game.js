@@ -59,6 +59,9 @@ var Game = class Game {
         this.black = new Player(blackPlayerId, playerNames[blackPlayerId], 'b');
         this.chess = new Chess();
     }
+    start() {
+        this.started = Date.now();
+    }
     toManyMoves() {
         return this.chess.history().length >= 100;
     }
@@ -67,7 +70,7 @@ var Game = class Game {
         return this.chess.fen();
     }
 
-    isLegalMove(move){
+    isLegalMove(move) {
         return this.chess.moves().some(legalMove => legalMove === move);
     }
 
@@ -84,7 +87,8 @@ var Game = class Game {
             white: this.white,
             black: this.black,
             pgn: this.chess.pgn(),
-            board: this.board()
+            board: this.board(),
+            started: this.started
         };
         return encryptJson(privateState)
     }
@@ -93,7 +97,8 @@ var Game = class Game {
         return {
             id: this.id,
             board: this.board(),
-            tardis: this.encrypt()
+            tardis: this.encrypt(),
+            started: this.started,
         }
     }
 
@@ -143,6 +148,7 @@ Game.fromPublic = function (publicGame) {
     game.black = Player.fromJson(privateState.black);
     game.white = Player.fromJson(privateState.white);
     game.chess.load_pgn(privateState.pgn);
+    game.started = privateState.started;
     return game;
 }
 

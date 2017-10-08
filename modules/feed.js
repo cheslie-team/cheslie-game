@@ -53,6 +53,7 @@ exports.move = function (game) {
     // console.log(game.white.name + ' - ' + game.black.name+ ' moved! in game ' + game.id);    
     broadcast('move', {
         gameId: game.id,
+        id: game.id,
         white: game.white.name,
         black: game.black.name,
         valueBlackPieces: game.valueBlackPieces(),
@@ -66,6 +67,7 @@ exports.gameStarted = function (game) {
     console.log(game.id + ' started!');
     broadcast('started', {
         id: game.id,
+        gameId: game.id,
         valueBlackPieces: game.valueBlackPieces(),
         valueWhitePieces: game.valueWhitePieces(),
         white: game.white.name,
@@ -78,6 +80,7 @@ exports.gameEnded = function (game) {
     console.log(game.id + ' ended in ' + reason(game) + ' with result ' + result(game));
     broadcast('ended', {
         id: game.id,
+        gameId: game.id,
         result: result(game),
         reason: reason(game),
         valueBlackPieces: game.valueBlackPieces(),

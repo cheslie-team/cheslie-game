@@ -70,8 +70,9 @@ io.on('connect', function (socket) {
       gameRoom.blackId = game.black.id;
       io.sockets.connected[game.black.id].lastMove = Date.now() + TIMEOUT;
       io.sockets.connected[game.white.id].lastMove = Date.now();
-      io.to(game.white.id).emit('move', game.asPublicGame());
+      game.start();
       feed.gameStarted(game);
+      io.to(game.white.id).emit('move', game.asPublicGame());
     }
   })
 
