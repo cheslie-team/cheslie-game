@@ -37,6 +37,20 @@ var io = null,
         } else {
             return game.chess.turn() === 'w' ? '0-1' : '1-0';
         }
+    },
+
+    mapGameToClientGame = (game) => {
+        return {
+            id: game.id,
+            gameId: game.id,
+            valueBlackPieces: game.valueBlackPieces(),
+            valueWhitePieces: game.valueWhitePieces(),
+            white: game.white.name,
+            black: game.black.name,
+            board: game.board(),
+            turn: 'w',
+            started: game.started
+        };
     };
 
 exports.init = function (socketio) {
@@ -51,42 +65,22 @@ exports.init = function (socketio) {
 
 exports.move = function (game) {
     // console.log(game.white.name + ' - ' + game.black.name+ ' moved! in game ' + game.id);    
-    broadcast('move', {
-        gameId: game.id,
-        id: game.id,
-        white: game.white.name,
-        black: game.black.name,
-        valueBlackPieces: game.valueBlackPieces(),
-        valueWhitePieces: game.valueWhitePieces(),
-        board: game.board(),
-        turn: game.chess.turn()
-    });
+    broadcast('move', mapGameToClientGame(game));
 }
 
 exports.gameStarted = function (game) {
     console.log(game.id + ' started!');
-    broadcast('started', {
-        id: game.id,
-        gameId: game.id,
-        valueBlackPieces: game.valueBlackPieces(),
-        valueWhitePieces: game.valueWhitePieces(),
-        white: game.white.name,
-        black: game.black.name,
-        turn: 'w'
-    });
+    broadcast('started', mapGameToClientGame(game));
 }
 
 exports.gameEnded = function (game) {
     console.log(game.id + ' ended in ' + reason(game) + ' with result ' + result(game));
-    broadcast('ended', {
-        id: game.id,
-        gameId: game.id,
-        result: result(game),
-        reason: reason(game),
-        valueBlackPieces: game.valueBlackPieces(),
-        valueWhitePieces: game.valueWhitePieces()
-    });
+    var clientGame = mapGameToClientGame(game);
+    clientGame.result = result(game);
+    clientGame.reason = reason(game);
+    broadcast('ended', clientGame);
 }
+
 exports.gameEndedWithReason = function (gameId, result, reason) {
     console.log(gameId + ' with result ' + result);
     broadcast('ended', {
@@ -94,7 +88,6 @@ exports.gameEndedWithReason = function (gameId, result, reason) {
         result: result,
         reason: reason,
         valueBlackPieces: 0,
-        valueWhitePieces: 0
+        valueWhitePieces: 0,
     });
 }
-
