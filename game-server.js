@@ -8,8 +8,8 @@ var config = require('cheslie-config'),
   feed = require('./modules/feed.js').init(io),
   schedule = require('node-schedule'),
   playerNames = {},
-  isWhiteBlack = function (whiteName, blackName, gameId) {
-    var key = whiteName + blackName;
+  isPlayerWhite = function (whiteName, gameId) {
+    var key = whiteName;
     var hashedKey = hash.sha256().update(key).digest('hex');
     return gameId.startsWith(hashedKey);
   },
@@ -25,14 +25,15 @@ var config = require('cheslie-config'),
     endGame(gameId);
   },
   checkForTimeOuts = () => {
-    var rooms = io.sockets.adapter.rooms,
-      timeOutLimit = Date.now() - TIMEOUT;
-    Object.keys(rooms).map(roomKey => {
+    var timeOutLimit = Date.now() - TIMEOUT,
+      rooms = io.sockets.adapter.rooms;
+    rooms = Object.keys(rooms).map(roomKey => {
       var room = rooms[roomKey];
       room.key = roomKey;
       room.players = Object.keys(room.sockets).map(socketId => { return io.sockets.connected[socketId] })
       return room;
-    })
+    });
+    rooms
       .filter(room => { return room.length === 2; })
       .filter(room => { return room.players.every(socket => { return socket.lastMove !== undefined; }); })
       .filter(room => { return room.players.every(socket => { return socket.lastMove < timeOutLimit; }); })
@@ -41,6 +42,15 @@ var config = require('cheslie-config'),
           result = (room.whiteId === looser.id) ? '0-1' : '1-0';
         endGameByTimeOut(room.key, result);
       });
+    rooms
+      .filter(room => { return room.length === 1; })
+      .filter(room => { return room.firstPlayerJoined !== undefined })
+      .filter(room => { return room.firstPlayerJoined < timeOutLimit })
+      .forEach(room => {
+        var isWhiteWinner = isPlayerWhite(playerNames[room.players[0].id], room.key),
+          result = (isWhiteWinner) ? '1-0' : '0-1';
+        endGameByTimeOut(room.key, result);
+      })
   },
   job = schedule.scheduleJob('*/5 * * * * *', () => {
     checkForTimeOuts();
@@ -61,7 +71,7 @@ io.on('connect', function (socket) {
     var allPlayers = Object.keys(gameRoom.sockets);
     if (allPlayers.length === 2) {
       var game;
-      if (isWhiteBlack(playerNames[allPlayers[1]], playerNames[allPlayers[0]], gameId)) {
+      if (isPlayerWhite(playerNames[allPlayers[1]], gameId)) {
         game = new Game(gameId, allPlayers[1], allPlayers[0], playerNames);
       } else {
         game = new Game(gameId, allPlayers[0], allPlayers[1], playerNames);
@@ -73,6 +83,9 @@ io.on('connect', function (socket) {
       game.start();
       feed.gameStarted(game);
       io.to(game.white.id).emit('move', game.asPublicGame());
+    }
+    if (allPlayers.length === 1) {
+      gameRoom.firstPlayerJoined = Date.now();
     }
   })
 
