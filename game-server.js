@@ -2,7 +2,7 @@ const TIMEOUT = 20000;
 var config = require('cheslie-config'),
   server = require('http').createServer(),
   hash = require('hash.js'),
-  io = require('socket.io').listen(server),
+  io = require('socket.io').listen(server, { pingInterval: 5000, pingTimeout: 10000 }),
   _ = require('underscore'),
   Game = require('./modules/game.js').Game,
   feed = require('./modules/feed.js').init(io),
@@ -106,8 +106,9 @@ io.on('connect', function (socket) {
 
   socket.on('disconnecting', function () {
     let rooms = Object.keys(socket.rooms).filter(room => { return room !== socket.id });
-    var result = (socket.isWhite) ? '0-1' : '1-0'
     rooms.map(gameId => {
+      var isWhite = isPlayerWhite(playerNames[socket.id], gameId),
+      result = (isWhite) ? '0-1' : '1-0';
       endGameByTimeOut(gameId, result);
     })
   });
