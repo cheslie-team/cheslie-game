@@ -1,4 +1,4 @@
-const TIMEOUT = 20000;
+const TIMEOUT = 15000;
 var config = require('cheslie-config'),
   server = require('http').createServer(),
   hash = require('hash.js'),
