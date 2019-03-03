@@ -15,23 +15,32 @@ const PAWN = 'p',
     [KING]: 0,
   };
 
-var crypto = require('crypto'),
+const crypto = require('crypto'),
+  key = crypto.randomBytes(32),
+  iv = crypto.randomBytes(16),
   Chess = require('chess.js').Chess,
   algorithm = 'aes-256-ctr',
   password = process.env.SPADE_SHAPED_SILVER_KEY || 'spade_shaped_silver_key',
   encryptJson = function(json) {
     var text = JSON.stringify(json);
-    var cipher = crypto.createCipheriv(algorithm, password);
-    var crypted = cipher.update(text, 'utf8', 'hex');
-    crypted += cipher.final('hex');
-    return crypted;
+    let cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(key), iv);
+    let encrypted = cipher.update(text);
+    encrypted = Buffer.concat([encrypted, cipher.final()]);
+    return { iv: iv.toString('hex'), encryptedData: encrypted.toString('hex') };
   },
   decryptJson = function(text) {
     var decipher = crypto.createDecipher(algorithm, password);
     try {
-      var dec = decipher.update(text, 'hex', 'utf8');
-      dec += decipher.final('utf8');
-      return JSON.parse(dec);
+      let iv = Buffer.from(text.iv, 'hex');
+      let encryptedText = Buffer.from(text.encryptedData, 'hex');
+      let decipher = crypto.createDecipheriv(
+        'aes-256-cbc',
+        Buffer.from(key),
+        iv,
+      );
+      let decrypted = decipher.update(encryptedText);
+      decrypted = Buffer.concat([decrypted, decipher.final()]);
+      return JSON.parse(decrypted.toString());
     } catch (ex) {
       return undefined;
     }
