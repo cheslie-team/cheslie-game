@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "main": "game.js",
+  "engines": {
+    "node": "10.14.1"
+  },
   "scripts": {
     "test": "mocha test",
     "start": "node game-server.js"
